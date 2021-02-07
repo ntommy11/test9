@@ -1,6 +1,6 @@
 import React from 'react';
 import { AuthContext, UserContext, IdContext} from '../components/context';
-import {View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import {View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Switch } from 'react-native';
 import SwitchSelector from 'react-native-switch-selector';
 import { SEE_REGIST_LECTURE } from '../queries';
 import { ApolloClient, InMemoryCache, useQuery, ApolloProvider } from "@apollo/client";
@@ -84,6 +84,24 @@ function Sub({class_list}){
   const user_meta = React.useContext(IdContext);
   const { signOut } = React.useContext(AuthContext);
 
+  // 공지 알림 ON/OFF
+  const [notif_switch, setNotifSwitch] = React.useState(false);
+  console.log("notif_switch:", notif_switch);
+    // 공지 알림 ON/OFF 초기값 세팅
+  AsyncStorage.getItem("notif_switch",(err,res)=>{
+    console.log("notif_switch res:", res);
+    setNotifSwitch(Boolean(res));
+  })
+
+  const notif_switch_handler = async()=>{
+    if(notif_switch){ // 끄는 상황
+      await AsyncStorage.removeItem("notif_switch");
+    }
+    else{
+      await AsyncStorage.setItem("notif_switch", "ON");
+    }
+    setNotifSwitch(!notif_switch);
+  }
   const exportICS = ()=>{
     let uri = FileSystem.documentDirectory + "schedule.ics"
     let file = createCAL(class_list);
@@ -103,6 +121,7 @@ function Sub({class_list}){
   })
   
   const setNotification = async (val) =>{
+    console.log("setNotification()");
     let initIndex = "0";
     switch(val){
       case 5: initIndex="1"; break;
@@ -152,22 +171,46 @@ function Sub({class_list}){
               </View>
               <View style={styles.item}>
                 <Text style={styles.title}>푸쉬 알림 설정</Text> 
-                <View style={{marginVertical: 5}}>
+                <TouchableOpacity style={{marginVertical: 5}} onPress={()=>user_meta.grade>1?Alert.alert("유료 회원 전용입니다"):null}>
                   {
                     pushInit != null? 
                     <SwitchSelector 
+                      disabled={user_meta.grade>1?true:false}
                       options={options} 
                       initial={pushInit}
                       backgroundColor="#eeeeee"
                       buttonColor="#1478FF"
                       fontSize={15}
-                      onPress={val => setNotification(val)}  
+                      onPress={val=>{
+                        if(user_meta.grade<2){
+                          setNotification(val)                         
+                        }
+                        else{
+                          Alert.alert("유료 회원 전용입니다")
+                          return 0;
+                        }
+                      }
+                      }  
                     />
                     :
                     null
                   }
-                </View>
+                </TouchableOpacity>
               </View>
+              {
+              <View style={styles.item}>
+                <View style={{flexDirection:"row", justifyContent:"space-between"}}>
+                  <Text style={styles.title}>공지 알림 설정</Text>
+                  <View style={{justifyContent:"flex-end", marginBottom:5}}>
+                    <Switch 
+                      value={notif_switch}
+                      onValueChange={()=>notif_switch_handler()}
+                    />
+                  </View>  
+                </View>
+
+              </View>
+              }   
           </View>
           <View style={{alignItems:"center", justifyContent:"center"}}>
               <TouchableOpacity style={styles.button} onPress={()=>exportICS()}>
@@ -188,9 +231,9 @@ function Sub({class_list}){
 function Main(){
   const { loading, error, data } = useQuery(SEE_REGIST_LECTURE);
 
-  console.log("loading: ",loading);
-  console.log("data   : " , data);
-  console.log("error  : ", error );
+  //console.log("loading: ",loading);
+  //console.log("data   : " , data);
+  //console.log("error  : ", error );
 
   if(loading){
     console.log("loading...");
@@ -226,7 +269,7 @@ function Main(){
     class_list.sort((a,b)=>{
       return a.start_time.getTime() - b.start_time.getTime();
     })
-    console.log(class_list);
+    //console.log(class_list);
     return (
       <Sub class_list = {class_list} />
     );
@@ -377,6 +420,6 @@ export default function AccountScreen(){
       marginVertical: 10,
       marginHorizontal: 10,
       borderBottomWidth: 1,
-      borderBottomColor: "#eeeeee"
+      borderBottomColor: "#eeeeee",
     }
   });

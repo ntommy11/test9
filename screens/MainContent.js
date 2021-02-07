@@ -506,7 +506,7 @@ allComment = route.params.Comment;
       {cond?
       <CommentReload route ={{id: route.params.id, userId: route.params.UserId, 
         text:route.params.text, title:route.params.title,
-        createdAt : route.params.createdAt, num: route.params.num, fromhome: route.params.fromhomem,
+        createdAt : route.params.createdAt, num: route.params.num, fromhome: route.params.fromhome,
         user : route.params.User
       }}
        deleteComment={deleteComment} navigation ={navigation}/>

@@ -139,7 +139,7 @@ export default function MainScreen(){
           <Stack.Screen name="Community" component={Community} />
           <Stack.Screen name="Post" component={Post} /> 
           <Stack.Screen name="Upload" component={Upload} options={{headerShown: false}} />
-          <Stack.Screen name="Account" component={AccountScreen}/>
+          <Stack.Screen name="계정" component={AccountScreen}/>
           <Stack.Screen name="WebviewLMS" component={WebviewLMS}/>
           <Stack.Screen name="WebviewHome" component={WebviewHome}/>
           <Stack.Screen name="WebviewPortal" component={WebviewPortal}/>
@@ -165,7 +165,7 @@ export function DefaultScreen({navigation}) {
               <View style={{flexDirection:"row"}}>
                 <TouchableOpacity 
                   style={{marginTop:10}}
-                  onPress= {()=>{navigation.navigate("Account")}}
+                  onPress= {()=>{navigation.navigate("계정")}}
                 ><EvilIcons name="user" size={32} color="white"/>
                 </TouchableOpacity>
               </View>

@@ -24,7 +24,7 @@ let colorMap = {};
 colorMap['default'] = "transparent";
 
 const NOW = new Date();
-const TIMEZONE = 0;
+const TIMEZONE = NOW.getTimezoneOffset()*60000;
 const NUM_OF_WEEKS = 16;
 
 Date.prototype.getWeek = function (dowOffset) {
@@ -344,9 +344,11 @@ function Monthly({class_list}){
 function Main({navigation}) {
   console.log("Main(ScheduleScreen) rendering");
   const user_meta = React.useContext(IdContext);
-  const [showAD, setShowAD] = React.useState(true);
+  //const [showAD, setShowAD] = React.useState(true);
 
-  const user = React.useContext(UserContext);
+
+  // 5초 전면 광고 
+
   // 시간표 데이터 Fetch & 전처리
   const { loading, error, data, refetch } = useQuery(SEE_REGIST_LECTURE);
 
@@ -395,7 +397,7 @@ function Main({navigation}) {
     const month = NOW.getMonth()+1;
     return (
       <View style={{flex:1, justifyContent: "center"}}>
-        {
+        {/*                                              이전 배너형 광고(삭제)
           user_meta.grade>1?
           <Modal
             animationType="slide"
@@ -419,7 +421,7 @@ function Main({navigation}) {
             </View>
           </Modal>
           :
-          null
+          null*/
         }
         <View style={{flex:5}}>
           <Text style={{ textAlign: "left", paddingLeft: 30, fontWeight: "700", paddingTop: 10 }}>금주 수업 {week}주차</Text>
@@ -436,7 +438,7 @@ function Main({navigation}) {
           <TouchableOpacity style={styles.button} onPress={()=>navigation.navigate('EditLectureScreen')}>
             <Text style={{fontSize:20, color:"white"}}>시간표 편집</Text>
           </TouchableOpacity>
-        </View>
+        </View> 
       </View>
     );
   }
@@ -450,45 +452,26 @@ function Main({navigation}) {
   );
 }
 
-function LectureScreen({navigation}){
-  console.log("LectureScreen rendering");
-  const [text, setText] = React.useState(null);
-  
-  return(
-    <View style={{ flex: 1}}>
-      <SearchBar 
-        placeholder="강의 찾기"
-      />
-      <Button title="back" onPress={()=>navigation.navigate("Main")} />
-    </View>
-  )
-}
-
 export default function ScheduleScreen({navigation}) {
   console.log("ScheduleScreen");
-  //const [refresh, setRefresh] = React.useState(true);
   const isFocused = useIsFocused();
-  const [showAD, setShowAD] = React.useState(true);
-  const userInfo = React.useContext(UserContext);
+  const user_info = React.useContext(UserContext);
+  const user_meta = React.useContext(IdContext);
   const client = new ApolloClient({
     uri: "http://52.251.50.212:4000/",
     cache: new InMemoryCache(),
     headers: {
-      Authorization: `Bearer ${userInfo.token}`
+      Authorization: `Bearer ${user_info.token}`
     }
   });
-/*
-  useFocusEffect(React.useCallback(()=>{
-    // 이곳에서 refetch
-    alert('SCREEN IS FOCUSED');
-    return()=>{
-      //alert("SCREEN WAS UNFOCUSED");
-      setRefresh(!refresh);
-    }
-  },[])
-  );
-*/
+
   if(isFocused){
+    // 시간표 탭에 돌아올 때마다 5초 전면 광고 
+    if(user_meta.grade >= 2){  // 유저 등급이 0,1이 아니라면 발생     
+      AdMobInterstitial.setAdUnitID("ca-app-pub-8233357974153609/1707547735").then(()=>{
+        AdMobInterstitial.requestAdAsync().then(()=>AdMobInterstitial.showAdAsync());
+      });
+    }
     colorIndex=0;
     return (
       <ApolloProvider client={client}>

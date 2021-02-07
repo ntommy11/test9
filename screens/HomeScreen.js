@@ -19,7 +19,7 @@ const NOTIF_BOARD_ID = 6 //공지사항 게시판 ID
 const STU_NOTIF_BOARD_ID = 8 //학생회알림 게시판 ID
 
 const NOW = new Date();
-const TIMEZONE = 0;
+const TIMEZONE = NOW.getTimezoneOffset()*60000;
 
 const weekday = ['일','월', '화', '수', '목', '금', '토'];
 
@@ -36,10 +36,11 @@ function is_empty(obj) {
   return Object.keys(obj).length === 0;
 }
 
+// 홈 탭에서 직후 일정 콤포넌트
 const CardInfo = ({current_class}) => {
   //console.log("current class at CardInfo: ", current_class);
   // 더이상 수업이 없는 경우 처리
-  if (current_class == undefined){
+  if (current_class == undefined || current_class.start_time < NOW){
     const NOW = new Date();
     let year = NOW.getFullYear();
     let month = NOW.getMonth()+1;
@@ -81,9 +82,11 @@ const CardInfo = ({current_class}) => {
     </View>
   )
 }
+
+// 홈 탭에서 다음 일정 콤포넌트
 const CardInfo2 = ({next_class}) => {
   //console.log("next class in CardInfo2: ", next_class);
-  if (next_class == undefined){
+  if (next_class == undefined || next_class.start_time < NOW){
     return (
       <View style={styles.card2}>
         <Text style={{ color: "#787878" }}>일정이 더이상 없습니다.</Text>
@@ -152,7 +155,7 @@ const Notification = ({navigation, bid}) => {
   }
   if(data){
     let posts = data.loadPost;
-    console.log("posts: ", posts);
+    //console.log("posts: ", posts);
     if(posts.length==0){
       return(
         <View style={styles.card2}>
@@ -204,7 +207,7 @@ const Notification = ({navigation, bid}) => {
                   UserId: post.UserId,
                   Comment: post.Comment,
                   createdAt: post.createdAt,
-                  frmhome : true,
+                  fromhome : true,
                   User:{
                     name: post.User.name,
                     __typename: post.User.__typename
@@ -272,7 +275,9 @@ function Main({navigation}){
     // 데이터 전처리. 
     let lectures = data.seeRegistLecture;
     //console.log("length: ", lectures.length);
-    let class_list = [];
+    let class_list = [{
+      start_time: new Date(null)
+    }];
     for(let i=0; i<lectures.length; i++){
       let num_of_classes = lectures[i].classes.length;
       for(let j=0; j<num_of_classes; j++){
@@ -297,11 +302,13 @@ function Main({navigation}){
         return a.start_time.getTime() - b.start_time.getTime();
       })
     } 
-    console.log("HomeScreen::Main::class_list: ",class_list);
+    //console.log("HomeScreen::Main::class_list: ",class_list);
+
     // 현재 시간 포함 가장 가까운 수업을 찾는다.
     let current_class = 0;
     let next_class = 0;
-    let now = new Date();                     // 나중에 현재 시간으로 수정되어야 함
+    let now = new Date(Number(NOW));                     
+    console.log("now:",now);
     for (let i=0; i<class_list.length; i++){
       if (now <= class_list[i].start_time){
         current_class = i;
@@ -319,13 +326,9 @@ function Main({navigation}){
       <Text style={{ textAlign: "left", paddingLeft: 30, fontWeight: "700", paddingTop: 10 }}>다음 일정</Text>
       
       <CardInfo2 next_class={class_list[next_class]}/>
-      <TouchableOpacity style={{width: 100 }} onPress={() => alert("공지사항 더보기")}>
         <Text style={{ textAlign: "left", paddingLeft: 30, fontWeight: "700", paddingTop: 10 }}>공지사항</Text>
-      </TouchableOpacity>
       <Notification navigation={navigation} bid={NOTIF_BOARD_ID}/>
-      <TouchableOpacity style={{width: 120}} onPress={() => alert("학생회 공지사항 더보기")}>
         <Text style={{ textAlign: "left", paddingLeft: 30, fontWeight: "700", paddingTop: 10 }}>학생회 공지사항</Text>
-      </TouchableOpacity>
       <Notification navigation={navigation} bid={STU_NOTIF_BOARD_ID}/>
       <View style={{flex:1,flexDirection:"row", alignItems:"center", justifyContent:"center", marginHorizontal:20}}>
         
@@ -356,6 +359,7 @@ function Main({navigation}){
 
 
 export default function HomeScreen({navigation}) {
+  console.log("HomeScreen");
   const isFocused = useIsFocused();
   const userInfo = React.useContext(UserContext);
   const client = new ApolloClient({

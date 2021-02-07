@@ -92,6 +92,7 @@ function Sub() {
       let token;
       let data;
       let lastNotif;
+      let notif_switch;
       try{
         data = await loginMutation({
           variables: {
@@ -105,7 +106,15 @@ function Sub() {
           try{
             await AsyncStorage.setItem('token', token);
             await AsyncStorage.setItem('userEmail', email);
-            await AsyncStorage.setItem('notified', "NO");
+            AsyncStorage.getItem("notif_switch",(err,res)=>{
+              console.log("notif_switch res:",res);
+              if(Boolean(res)){
+                AsyncStorage.setItem('notified', "NO");
+              }
+              else{
+                AsyncStorage.setItem('notified', "YES");
+              }
+            });
             lastNotif = await AsyncStorage.getItem('lastNotif');
           }catch(e){
             console.log(e);
@@ -150,13 +159,20 @@ function Sub() {
       let token;
       let userEmail;
       let lastNotif;
+      let notif_switch;
       token = null;
       userEmail = null;
       try{
         token = await AsyncStorage.getItem('token');
         userEmail = await AsyncStorage.getItem('userEmail');
         lastNotif = await AsyncStorage.getItem('lastNotif');
-        await AsyncStorage.setItem('notified', "NO");
+        notif_switch = await AsyncStorage.getItem('notif_switch');
+        console.log("notif_switch:",notif_switch);
+        if(notif_switch){
+          await AsyncStorage.setItem('notified', "NO");
+        }else{
+          await AsyncStorage.setItem('notified', "YES");
+        }
       }catch(e){
         console.log(e);
       }
