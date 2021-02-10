@@ -234,7 +234,7 @@ function AD(){
   )
 }
 export default function App(){
-  //AsyncStorage.clear();
+  AsyncStorage.clear();
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,

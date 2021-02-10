@@ -209,12 +209,13 @@ mutation postdelete($pid: Int!){
 
 
 export const CREATE_ACCOUNT = gql`
-    mutation createAccount($email: String!, $password: String!, $name: String!, $grade: Int){
-        createAccount(email: $email, password: $password, name: $name, grade: $grade){
+    mutation createAccount($email: String!, $password: String!, $name: String!, $grade: Int, $number: String!){
+        createAccount(email: $email, password: $password, name: $name, grade: $grade, number: $number){
             email,
             password,
             name,
-            grade
+            grade,
+            number
         }
     }
 `;

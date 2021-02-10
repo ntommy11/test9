@@ -18,7 +18,7 @@ import { CREATE_ACCOUNT, DATABASE_URL } from '../queries';
 import { UserContext } from '../components/context';
 
 const EMAIL_RE = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-
+const NUM_LEN = 8; // 학번 길이
 
 const Main = ({ navigation }) => {
     const [data, setData] = React.useState({
@@ -26,6 +26,7 @@ const Main = ({ navigation }) => {
         username: '',
         password: '',
         repassword: '',
+        number:'',
         check_text: false,
     });
 
@@ -55,12 +56,21 @@ const Main = ({ navigation }) => {
             repassword: val
         })
     }
+    const handleNumberChange = (val)=>{
+        setData({
+            ...data,
+            number: val
+        })
+    }
 
-    const handleSignup = async (email, username, password, repassword) => {
+
+    const handleSignup = async (email, username, number, password, repassword) => {
         if (EMAIL_RE.test(email)==false){
             Alert.alert("이메일 형식을 확인하세요");
         }else if (username == ''){
             Alert.alert("이름을 입력하세요");
+        }else if (number.length != NUM_LEN){
+            Alert.alert("학번을 확인하세요");
         }else if(password == ''){
             Alert.alert("비밀번호를 입력하세요");
         }else if (password != repassword) {
@@ -73,7 +83,8 @@ const Main = ({ navigation }) => {
                         email: email,
                         name: username,
                         password: password,
-                        grade: default_grade
+                        grade: default_grade,
+                        number: number
                     }
                 })
                 console.log("data:", data);
@@ -120,6 +131,16 @@ const Main = ({ navigation }) => {
                     ></TextInput>
                     <Feather name="check-circle" color="#1478FF" size={2} />
                 </View>
+                <Text style={[styles.text_footer, { marginTop: 20 }]}>학번</Text>
+                <View style={styles.action}>
+                    <TextInput
+                        placeholder="학번을 입력하세요"
+                        style={styles.TextInput}
+                        autoCapitalize="none"
+                        onChangeText={(text) => handleNumberChange(text)}
+                    ></TextInput>
+                    <Feather name="check-circle" color="#1478FF" size={2} />
+                </View>
                 <Text style={[styles.text_footer, { marginTop: 20 }]}>비밀번호</Text>
                 <View style={styles.action}>
                     <TextInput
@@ -145,7 +166,7 @@ const Main = ({ navigation }) => {
                 </View>
                 <View style={{alignItems:"center"}}>
                     <TouchableOpacity style={styles.button} onPress={() => {
-                        handleSignup(data.email, data.username, data.password, data.repassword);
+                        handleSignup(data.email, data.username, data.number, data.password, data.repassword);
                     }}>
                         <Text style={{ fontSize: 20, color: "white" }}>가입 신청하기</Text>
                     </TouchableOpacity>
